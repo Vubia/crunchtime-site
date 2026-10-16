@@ -5,4 +5,4 @@ compatibility_date = "2026-10-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "crunchtime-db"
-database_id = "e7a3a2a0-b0ad-4707-a3af-5de6eb26dd83"
+database_id = "71eefe80-93fd-4437-b0db-6c7c0fb26489"
