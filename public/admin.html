@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!-- Kaptan köşkü. Buraya yalnızca anahtarı olan girer; Brund da dahil, o bile kapıda bekler. -->
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>CRUNCH TIME | Yönetim</title>
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body class="admin">
+
+<!-- GİRİŞ -->
+<main class="wrap" id="login" hidden>
+  <h1 class="logo"><span class="l1" style="font-size:min(10vw,48px)">CRUNCH TIME</span></h1>
+  <p class="tag">YÖNETİM PANELİ</p>
+  <form class="panel" id="login-form">
+    <h2>ANAHTAR</h2>
+    <label class="field"><span>YÖNETİCİ ANAHTARI</span><input id="token" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+    <div class="err" id="login-err"></div>
+    <button class="btn" type="submit">GİR<span class="arr"></span></button>
+  </form>
+</main>
+
+<!-- PANEL -->
+<div id="app" hidden>
+  <header class="adm-head">
+    <span class="brand">CRUNCH TIME</span>
+    <button class="tabbtn on" data-tab="players">OYUNCULAR</button>
+    <button class="tabbtn" data-tab="photo">HIZLI FOTO</button>
+    <button class="tabbtn" data-tab="bracket">TURNUVA</button>
+    <button class="tabbtn" data-tab="settings">AYARLAR</button>
+    <button class="tabbtn" id="logout">ÇIKIŞ</button>
+  </header>
+
+  <main class="adm">
+    <!-- OYUNCULAR -->
+    <section id="t-players">
+      <div class="stats" id="stats"></div>
+      <div class="toolbar">
+        <input class="inp" id="q" placeholder="ID, isim ya da telefon ara" autocomplete="off" autocapitalize="characters">
+        <button class="btn small" id="btn-refresh" type="button">YENİLE</button>
+      </div>
+      <div id="plist"></div>
+    </section>
+
+    <!-- HIZLI FOTO -->
+    <section id="t-photo" hidden>
+      <div class="quickbox panel">
+        <h2>ÇİZİM FOTOĞRAFI YÜKLE</h2>
+        <label class="field"><span>OYUNCU ID (4 HANE)</span><input id="qp-id" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
+        <div class="who-line" id="qp-who">ID'yi yaz, kimin olduğu burada çıkar.</div>
+        <input type="file" id="qp-file" accept="image/*" hidden>
+        <button class="btn cyan" id="qp-pick" type="button" disabled>FOTOĞRAF ÇEK / SEÇ</button>
+        <img class="preview" id="qp-prev" alt="" hidden>
+        <button class="btn" id="qp-up" type="button" hidden>YÜKLE</button>
+        <div class="hint" id="qp-msg"></div>
+      </div>
+    </section>
+
+    <!-- TURNUVA -->
+    <section id="t-bracket" hidden>
+      <div class="panel">
+        <h2>TURNUVA KONTROLÜ</h2>
+        <div class="stats" id="b-stats"></div>
+        <div class="row">
+          <a class="btn small cyan" href="/arena" target="_blank" rel="noopener">ARENA EKRANI (PROJEKSİYON)</a>
+          <a class="btn small ghost" href="/vote" target="_blank" rel="noopener">OYLAMA SAYFASI</a>
+          <a class="btn small ghost" href="/poster" target="_blank" rel="noopener">QR AFİŞİ</a>
+        </div>
+        <div class="row">
+          <button class="btn small" id="b-build">AĞACI KUR (RASTGELE EŞLEŞTİR)</button>
+          <button class="btn small ghost" id="b-reset">AĞACI SİL</button>
+        </div>
+        <div id="b-ctl"></div>
+      </div>
+      <div class="mlist" id="b-list"></div>
+    </section>
+
+    <!-- AYARLAR -->
+    <section id="t-settings" hidden>
+      <div class="panel">
+        <h2>SAYAÇ SÜRESİ</h2>
+        <p class="hint">Yeni kayıt olanlar için geçerli. Zaten başlamış sayaçlar etkilenmez.</p>
+        <div class="row">
+          <input class="inp" id="s-min" type="number" min="1" max="180" style="width:130px">
+          <span>dakika</span>
+          <button class="btn small" id="s-save">KAYDET</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>VERİYİ İNDİR</h2>
+        <p class="hint">Ad, soyad, telefon, görev. Excel / Google Sheets'te açılır; telefonlar anket için hazır.</p>
+        <button class="btn small cyan" id="s-csv">CSV İNDİR</button>
+      </div>
+      <div class="panel danger">
+        <h2>TEHLİKELİ BÖLGE</h2>
+        <p class="hint">Etkinlikten önce test kayıtlarını temizlemek için. Geri dönüş yok.</p>
+        <button class="btn small red" id="s-wipe-b">TURNUVAYI SIFIRLA</button>
+        <button class="btn small red" id="s-wipe-p">TÜM KAYITLARI VE FOTOĞRAFLARI SİL</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast"></div>
+<script src="/assets/js/common.js"></script>
+<script src="/assets/js/admin.js"></script>
+</body>
+</html>

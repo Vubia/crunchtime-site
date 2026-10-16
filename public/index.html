@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!-- Güverteye hoş geldin, meraklı. Burada define yok ama Art Director'ün kahve kupası var; dokunma, soğumuştur. -->
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0820">
+<meta name="robots" content="noindex,nofollow">
+<title>CRUNCH TIME | Draw Fighter</title>
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="tape"></div>
+<div class="ticker"><span>DEADLINE YAKLAŞIYOR // GİRİLMEZ // DANGER // KALEMLERİ KALDIRMAYA HAZIRLAN // ART DIRECTOR İZLİYOR // AĞLAMAK YASAK // DEADLINE YAKLAŞIYOR // GİRİLMEZ // DANGER //</span></div>
+
+<main class="wrap">
+
+  <!-- 1) AÇILIŞ EKRANI -->
+  <section id="s-title" class="screen" hidden>
+    <div class="hud" id="hud"></div>
+    <h1 class="logo"><span class="l1">CRUNCH</span><span class="l2">TIME</span></h1>
+    <p class="tag">DRAW FIGHTER</p>
+    <div class="panel">
+      <p>Kendi dövüşçünü yarat. Süre kısa, Art Director sabırsız.</p>
+      <p style="margin-top:10px;color:var(--dim)">Önce küçük bir sözleşme, sonra kayıt, sonra saat işlemeye başlar.</p>
+    </div>
+    <button class="btn start" id="btn-start" type="button">PRESS START<span class="arr"></span></button>
+  </section>
+
+  <!-- 2) SÖZLEŞME -->
+  <section id="s-waiver" class="screen" hidden>
+    <div class="panel">
+      <h2>STÜDYO ÇALIŞMA SÖZLEŞMESİ</h2>
+      <div class="waiver">
+        <h3>TARAFLAR: SEN &amp; BASKICI ART DIRECTOR</h3>
+        <ol>
+          <li>Art Director'ün her türlü hakaretini, iç çekişini ve "bunu bir de büyütsek?" cümlesini kabul ediyorum.</li>
+          <li>Deadline stresini, kalp çarpıntısını ve kasılan çene kaslarını kabul ediyorum.</li>
+          <li>Çizimim kötüyse "ASSET FLIP!", iyiyse "İğrenç... tam istediğim şey bu" duyabileceğimi biliyorum.</li>
+          <li>Kopya çekmek serbest. Sektörde buna "esinlenme" denir. Daha hızlı çal.</li>
+          <li>Süre bitince kalemi bırakacağım. Bırakmazsam korna çalar, utanç kalıcıdır.</li>
+          <li><b>AĞLAMAYACAĞIM.</b> Ağlarsam gözyaşım mürekkep sayılır ve çizime dahil edilir.</li>
+          <li>"Crunch Time Gazisi" rozeti iade edilemez, takas edilemez ve kimseye gösterilmeden taşınamaz.</li>
+        </ol>
+        <p class="fine">Veri notu: Ad, soyad ve telefon numaran yalnızca etkinlik sonrası anketi göndermek ve çizimini sana eşleştirmek için kullanılır.</p>
+      </div>
+      <label class="check">
+        <input type="checkbox" id="chk-agree"><i></i>
+        <span>Okudum, anladım, ağlamayacağım.</span>
+      </label>
+      <button class="btn red" id="btn-agree" type="button" disabled>KABUL EDİYORUM<span class="arr"></span></button>
+    </div>
+  </section>
+
+  <!-- 3) KAYIT FORMU -->
+  <section id="s-form" class="screen" hidden>
+    <form class="panel" id="form" novalidate autocomplete="on">
+      <h2>OYUNCU SEÇİMİ</h2>
+      <label class="field"><span>ADIN</span><input id="f-first" name="given-name" autocomplete="given-name" maxlength="40" autocapitalize="words"></label>
+      <label class="field"><span>SOYADIN</span><input id="f-last" name="family-name" autocomplete="family-name" maxlength="40" autocapitalize="words"></label>
+      <label class="field"><span>TELEFON</span><input id="f-phone" name="tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="05__ ___ __ __"></label>
+      <div class="err" id="f-err" role="alert"></div>
+      <button class="btn" id="btn-go" type="submit">KAYDET VE BAŞLA<span class="arr"></span></button>
+    </form>
+  </section>
+
+  <!-- 4) GİRİŞ SAHNESİ: kimlik çarkı, görev, 3-2-1 -->
+  <section id="s-intro" class="screen" hidden>
+    <p class="pl-label">OYUNCU KİMLİĞİN</p>
+    <div class="idrow" id="idrow"><b class="spin">?</b><b class="spin">?</b><b class="spin">?</b><b class="spin">?</b></div>
+    <div class="panel mission">
+      <h2>GÖREVİN</h2>
+      <div class="m-main" id="m-main"></div>
+      <div class="m-twist" id="m-twist" hidden><em>ZORUNLU DETAY</em><span id="m-twist-t"></span></div>
+    </div>
+    <div class="count" id="count" hidden></div>
+  </section>
+
+  <!-- 5) DÖVÜŞ: sayaç -->
+  <section id="s-fight" class="screen" hidden>
+    <div class="p-head"><span class="pid" id="k-id">----</span><span class="pname" id="k-name"></span></div>
+    <div class="hp" id="hp"><i id="hp-fill"></i></div>
+    <div class="clockbox"><div class="clock" id="clock">15:00</div></div>
+    <div class="quote"><b>ART DIRECTOR</b><span id="quote"></span></div>
+    <div class="panel mission">
+      <h2>GÖREVİN</h2>
+      <div class="m-main" id="k-main"></div>
+      <div class="m-twist"><em>ZORUNLU DETAY</em><span id="k-twist"></span></div>
+    </div>
+    <div class="note"><b>ID'Nİ YAZ:</b> Çizimin köşesine <b id="k-id2">----</b> yaz. Fotoğraf ID ile eşleşiyor.</div>
+  </section>
+</main>
+
+<!-- SÜRE DOLDU -->
+<div id="timesup" hidden>
+  <div id="tu-skull"></div>
+  <div class="tu1">TIME'S<br>UP!</div>
+  <div class="tu2">PENCILS<br>DOWN!</div>
+  <div class="tu3">Kalemi bırak. Çizimini <b id="tu-id">----</b> ID'siyle Art Director'e teslim et.</div>
+  <a class="mini-link" id="tu-new" href="#" style="color:#fff">başka oyuncu için yeni kayıt</a>
+</div>
+<div class="fflash" id="fflash" hidden><b>FIGHT!</b></div>
+
+<script src="/assets/js/common.js"></script>
+<script src="/assets/js/player.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!-- Arena: projeksiyon ekranı. Gemi, top ve seyirci tamam; ortada iki çizim, bir kazanan. Ağlamak yasak. -->
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>CRUNCH TIME | Arena</title>
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body class="arena">
+  <header class="ar-head">
+    <span class="t">CRUNCH TIME // DRAW FIGHTER</span>
+    <span class="r" id="ar-round"></span>
+  </header>
+  <div class="tape" style="height:1.2vh"></div>
+  <main id="ar-main"></main>
+
+  <div id="champ" hidden>
+    <canvas class="cf" id="cf"></canvas>
+    <div class="big" id="champ-big">ŞAMPİYON!</div>
+    <div class="pic"><img id="champ-img" alt=""></div>
+    <div class="nm"><b id="champ-id"></b><span id="champ-name"></span></div>
+  </div>
+
+  <div class="net" id="net" hidden>BAĞLANTI YOK</div>
+  <div class="snd" id="snd">ses ve tam ekran için ekrana tıkla</div>
+
+<script src="/assets/js/common.js"></script>
+<script src="/assets/js/arena.js"></script>
+</body>
+</html>
