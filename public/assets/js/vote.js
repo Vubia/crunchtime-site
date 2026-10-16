@@ -56,11 +56,22 @@
     } catch (ex) { alert(ex.message); poll(); }
   });
 
-  let latest = null;
+  // Sorgu aralığı duruma göre: oylama açıkken sık, beklerken seyrek, turnuva bitince neredeyse hiç.
+  // Yüzlerce telefon aynı anda vurmasın diye aralığa biraz rastgelelik katılır.
+  let latest = null, timer = null, inflight = false;
+  const gap = () => {
+    const br = latest && latest.bracket;
+    const base = br && br.voting ? 4000 : br && br.champion ? 60000 : 10000;
+    return base * (0.85 + Math.random() * 0.3);
+  };
   async function poll() {
-    if (document.hidden) return;
+    clearTimeout(timer);
+    if (document.hidden || inflight) return;   // görünür olunca visibilitychange yeniden başlatır
+    inflight = true;
     try { latest = await api('/api/state'); draw(latest); } catch { /* ağ kesilirse bir sonraki turda tekrar */ }
+    inflight = false;
+    timer = setTimeout(poll, gap());
   }
-  poll(); setInterval(poll, 4000);
+  poll();
   document.addEventListener('visibilitychange', poll);
 })();
