@@ -45,16 +45,48 @@ async function sha(s) {
 
 // Yönetici kapısı: başlıkta gelen anahtar, Pages sırrı ADMIN_TOKEN ile karşılaştırılır.
 // Başarılıysa true, değilse hazır bir Response döner.
+// Doğru anahtar her zaman geçer: etkinlikte herkes aynı wifi'den (aynı IP'den) çıkar, yanlış deneyen
+// bir meraklı kaptanı kapı dışında bırakamasın. Sınır yalnızca yanlış denemeleri yavaşlatır.
 export async function adminGate(request, env) {
   const ip = request.headers.get('cf-connecting-ip') || 'x';
   if (!env.ADMIN_TOKEN) return fail(503, 'Yönetici anahtarı kurulmamış.');
-  if (tooManyFails('fail:' + ip)) return fail(429, 'Çok fazla yanlış deneme. Bir dakika bekle.');
   const given = request.headers.get('x-admin-token') || '';
   const [a, b] = await Promise.all([sha(given), sha(env.ADMIN_TOKEN)]);
   let diff = given ? 0 : 1;
   for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
-  if (diff !== 0) { limited('fail:' + ip, 1000); return fail(401, 'Anahtar yanlış.'); }
-  return true;
+  if (diff === 0) return true;
+  limited('fail:' + ip, 1000);
+  if (tooManyFails('fail:' + ip)) return fail(429, 'Çok fazla yanlış deneme. Bir dakika bekle.');
+  return fail(401, 'Anahtar yanlış.');
+}
+
+// Seyirci kimliği: sunucu imzalı, HttpOnly çerez. İstemci kendi kimliğini uyduramaz;
+// yeni kimlik yalnızca /api/voter'dan çıkar. İmza anahtarı VOTE_SECRET (yoksa ADMIN_TOKEN) sırrından türer.
+const VOTER_COOKIE = 'ct_voter';
+async function voterKey(env) {
+  const secret = env.VOTE_SECRET || env.ADMIN_TOKEN;
+  if (!secret) return null;
+  return crypto.subtle.importKey('raw', await sha('ct-voter:' + secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
+}
+const hex = buf => Array.from(new Uint8Array(buf), x => x.toString(16).padStart(2, '0')).join('');
+const unhex = s => new Uint8Array(s.match(/../g).map(h => parseInt(h, 16)));
+
+// Geçerli çerez varsa seyirci kimliğini döner, yoksa null.
+export async function readVoter(request, env) {
+  const m = /(?:^|;\s*)ct_voter=([0-9a-f]{32})\.([0-9a-f]{64})(?:;|$)/.exec(request.headers.get('cookie') || '');
+  const key = m && await voterKey(env);
+  if (!key) return null;
+  const ok = await crypto.subtle.verify('HMAC', key, unhex(m[2]), new TextEncoder().encode(m[1]));
+  return ok ? m[1] : null;
+}
+
+// Yeni kimlik + Set-Cookie başlığı. Anahtar yoksa null.
+export async function mintVoter(env) {
+  const key = await voterKey(env);
+  if (!key) return null;
+  const id = hex(crypto.getRandomValues(new Uint8Array(16)));
+  const sig = hex(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(id)));
+  return { id, cookie: `${VOTER_COOKIE}=${id}.${sig}; Path=/api; Max-Age=172800; HttpOnly; Secure; SameSite=Strict` };
 }
 
 export async function getSetting(env, k, dflt) {

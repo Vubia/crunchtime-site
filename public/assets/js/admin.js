@@ -162,9 +162,14 @@
   async function loadBracket() {
     try { bk = await A('/api/admin/bracket'); renderBracket(); } catch (e) { fail(e); }
   }
+  // Çift dokunuş ikinci isteği göndermesin; sunucu reddederse (ör. başka cihaz değiştirdi) güncel hali çek.
+  let acting = false;
   async function act(action, extra = {}) {
+    if (acting) return;
+    acting = true;
     try { bk = await A('/api/admin/bracket', { method: 'POST', body: { action, ...extra } }); renderBracket(); }
-    catch (e) { fail(e); }
+    catch (e) { fail(e); loadBracket(); }
+    finally { acting = false; }
   }
   const nm = (br, id) => id && br.fighters[id] ? `${id} (${esc(br.fighters[id].name)})` : '<span style="color:#777">belli değil</span>';
 
@@ -193,15 +198,17 @@
               <div class="livebar"><i class="a" style="width:${bk.live.a / t * 100}%"></i><i class="b" style="width:${bk.live.b / t * 100}%"></i></div>`;
     }
     const playable = cur && cur.m.a && cur.m.b && !cur.m.winner;
+    // Oylama açıkken yalnızca KAPAT ve ekran düğmeleri çalışır (sunucu da aynısını uygular).
+    const lock = br.voting ? 'disabled' : '';
     ctl.innerHTML = head + live + `<div class="row">
-      <button class="btn small" data-b="next">SIRADAKİ MAÇ</button>
+      <button class="btn small" data-b="next" ${lock}>SIRADAKİ MAÇ</button>
       <button class="btn small red" data-b="rng" ${playable && !br.voting ? '' : 'disabled'}>RNG İLE DÖVÜŞTÜR</button>
       ${br.voting ? '<button class="btn small cyan" data-b="vote_close">OYLAMAYI KAPAT VE BİTİR</button>'
         : `<button class="btn small cyan" data-b="vote_open" ${playable ? '' : 'disabled'}>OYLAMAYI AÇ</button>`}
     </div><div class="row">
-      <button class="btn small ghost" data-b="set_winner" data-side="a" ${playable ? '' : 'disabled'}>A KAZANDI (ELLE)</button>
-      <button class="btn small ghost" data-b="set_winner" data-side="b" ${playable ? '' : 'disabled'}>B KAZANDI (ELLE)</button>
-      <button class="btn small ghost" data-b="undo">SON SONUCU GERİ AL</button>
+      <button class="btn small ghost" data-b="set_winner" data-side="a" ${playable && !br.voting ? '' : 'disabled'}>A KAZANDI (ELLE)</button>
+      <button class="btn small ghost" data-b="set_winner" data-side="b" ${playable && !br.voting ? '' : 'disabled'}>B KAZANDI (ELLE)</button>
+      <button class="btn small ghost" data-b="undo" ${lock}>SON SONUCU GERİ AL</button>
     </div><div class="row">
       <button class="btn small ghost" data-b="view" data-view="bracket">EKRAN: AĞAÇ</button>
       <button class="btn small ghost" data-b="view" data-view="stage">EKRAN: SAHNE</button>
@@ -214,7 +221,7 @@
       return `<div class="mrow${isCur ? ' cur' : ''}${done ? ' done' : ''}">
         <span class="rn">${roundName(r, br.rounds.length)} ${i + 1}</span>
         <span>${m.a || '?'} vs ${m.b || '?'}</span>
-        <span>${(m.a && m.b && !done) ? `<button class="btn small ghost" data-b="current" data-m="${m.id}" style="margin:0">SEÇ</button>` : res}</span></div>`;
+        <span>${(m.a && m.b && !done) ? `<button class="btn small ghost" data-b="current" data-m="${m.id}" style="margin:0" ${lock}>SEÇ</button>` : res}</span></div>`;
     }).join('')).join('');
   }
   function findM(br, id) {

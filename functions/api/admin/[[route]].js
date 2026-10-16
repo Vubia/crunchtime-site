@@ -4,7 +4,7 @@
 //   DELETE players?id= | photo?id=
 import { json, fail, clean, sameOrigin, adminGate, getSetting, setSetting, DEFAULT_MIN } from '../../_lib/util.js';
 import {
-  readBracket, saveBracket, buildBracket, findMatch, setWinner, clearWinner, nextPlayable, rnd,
+  readBracket, saveBracket, writeNewBracket, buildBracket, findMatch, setWinner, clearWinner, nextPlayable, rnd,
 } from '../../_lib/bracket.js';
 
 const MAX_PHOTO_B64 = 900000;   // ~650 KB ikili; istemci zaten ~120 KB'a küçültüyor
@@ -157,7 +157,7 @@ async function bracketAction(env, body) {
     await setSetting(env, 'bracket_gen', gen);
     const fighters = list.map(x => ({ id: x.id, name: `${x.first_name} ${x.last_name.charAt(0)}.`, v: x.v }));
     br = buildBracket(fighters, gen);
-    await saveBracket(env, br);
+    await writeNewBracket(env, br);
     return json(await adminBracketState(env));
   }
 
@@ -167,6 +167,8 @@ async function bracketAction(env, body) {
   }
 
   if (!br) return fail(400, 'Önce turnuva ağacını oluştur.');
+  // Açık oylama sessizce kaybolmasın: kapanana kadar yalnızca ekran değiştirilebilir.
+  if (br.voting && action !== 'view' && action !== 'vote_close') return fail(409, 'Oylama açık. Önce OYLAMAYI KAPAT ile bitir.');
 
   if (action === 'view') {
     if (!['bracket', 'stage', 'champion'].includes(body.view)) return fail(400, 'Görünüm geçersiz.');
@@ -221,6 +223,6 @@ async function bracketAction(env, body) {
     return fail(400, 'Bilinmeyen eylem.');
   }
 
-  await saveBracket(env, br);
+  if (!(await saveBracket(env, br))) return fail(409, 'Başka bir cihaz aynı anda değiştirdi. Ekran yenilendi, tekrar dene.');
   return json(await adminBracketState(env));
 }

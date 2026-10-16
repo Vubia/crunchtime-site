@@ -21,11 +21,22 @@ export async function readBracket(env) {
   return row ? JSON.parse(row.v) : null;
 }
 
-export async function saveBracket(env, br) {
+// Yeni ağacı koşulsuz yazar (kurulum: eskisinin üstüne bilerek yazılır).
+export async function writeNewBracket(env, br) {
   br.version = (br.version || 0) + 1;
   await env.DB.prepare("INSERT INTO kv (k, v) VALUES ('bracket', ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v")
     .bind(JSON.stringify(br)).run();
   return br;
+}
+
+// Var olan ağacı yalnızca okunduğundan beri kimse değiştirmediyse yazar.
+// İki cihaz (ya da çift dokunuş) aynı anda düğmeye basarsa ikincisi false alır, birbirini ezmez.
+export async function saveBracket(env, br) {
+  const prev = br.version || 0;
+  br.version = prev + 1;
+  const r = await env.DB.prepare("UPDATE kv SET v = ? WHERE k = 'bracket' AND json_extract(v, '$.version') = ?")
+    .bind(JSON.stringify(br), prev).run();
+  return r.meta.changes === 1;
 }
 
 // fighters: [{ id, name, v }]

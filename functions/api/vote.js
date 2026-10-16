@@ -1,17 +1,22 @@
-// POST /api/vote  { matchId, side: 'a'|'b', voter }
-// Seyirci oyu: yalnızca oylama o maç için açıkken kabul edilir. Cihaz başına tek oy, kapanana kadar değiştirilebilir.
-import { json, fail, sameOrigin, limited } from '../_lib/util.js';
+// POST /api/vote  { matchId, side: 'a'|'b' }
+// Seyirci oyu: yalnızca oylama o maç için açıkken kabul edilir. Kimlik /api/voter'ın verdiği imzalı çerezden gelir;
+// cihaz başına tek oy, kapanana kadar değiştirilebilir.
+import { json, fail, sameOrigin, limited, readVoter } from '../_lib/util.js';
 import { readBracket } from '../_lib/bracket.js';
 
 export async function onRequestPost({ request, env }) {
   if (!sameOrigin(request)) return fail(403, 'Yasak.');
-  if (limited('vote:' + (request.headers.get('cf-connecting-ip') || 'x'), 240)) return fail(429, 'Çok hızlısın.');
+  // Herkes aynı wifi'den gelir: IP sınırı yalnızca sel baskınını keser, asıl sınır kimlik başına.
+  if (limited('vote:' + (request.headers.get('cf-connecting-ip') || 'x'), 6000)) return fail(429, 'Çok hızlısın.');
+
+  const voter = await readVoter(request, env);
+  if (!voter) return fail(401, 'Oylama kimliği yok. Sayfayı yenile.');
+  if (limited('voter:' + voter, 20)) return fail(429, 'Çok hızlısın.');
 
   let b;
   try { b = await request.json(); } catch { return fail(400, 'Bozuk istek.'); }
   const side = b.side === 'a' || b.side === 'b' ? b.side : null;
-  const voter = typeof b.voter === 'string' && /^[a-z0-9]{8,32}$/.test(b.voter) ? b.voter : null;
-  if (!side || !voter || typeof b.matchId !== 'string') return fail(400, 'Eksik bilgi.');
+  if (!side || typeof b.matchId !== 'string') return fail(400, 'Eksik bilgi.');
 
   const br = await readBracket(env);
   if (!br || br.voting !== b.matchId) return fail(409, 'Oylama kapalı.');

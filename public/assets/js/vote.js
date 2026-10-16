@@ -1,15 +1,12 @@
 // Seyirci oylaması: oylama açıksa iki çizim çıkar, dokunan oy verir. Kapalıysa "bekle" der.
-// Cihaz kimliği localStorage'da durur; aynı cihazdan gelen ikinci oy ilkini ezer.
+// Cihaz kimliği sunucunun verdiği HttpOnly çerezde durur; aynı cihazdan gelen ikinci oy ilkini ezer.
 (() => {
   'use strict';
   const { $, api, esc } = CT;
   const body = $('#v-body');
 
-  let voter = localStorage.getItem('ct_voter');
-  if (!voter) {
-    voter = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => (b % 36).toString(36)).join('');
-    localStorage.setItem('ct_voter', voter);
-  }
+  localStorage.removeItem('ct_voter');   // eski sürümün kendi ürettiği kimlik; artık kullanılmıyor
+  const voterReady = api('/api/voter').catch(() => { /* oy verirken yeniden denenir */ });
 
   let key = '';   // aynı görünümü boşuna yeniden çizmemek için
   const find = (br, id) => { for (const r of br.rounds) for (const m of r) if (m.id === id) return m; return null; };
@@ -48,8 +45,11 @@
     const c = e.target.closest('.vcard'); if (!c) return;
     const mid = latest && latest.bracket && latest.bracket.voting; if (!mid) return;
     const side = c.dataset.side;
+    const send = () => api('/api/vote', { method: 'POST', body: { matchId: mid, side } });
     try {
-      await api('/api/vote', { method: 'POST', body: { matchId: mid, side, voter } });
+      await voterReady;
+      // Çerez yoksa ya da süresi dolduysa bir kez yenisini alıp tekrar dene.
+      await send().catch(async ex => { if (ex.status !== 401) throw ex; await api('/api/voter'); return send(); });
       localStorage.setItem('ct_pick_' + mid, side);
       if (navigator.vibrate) navigator.vibrate(60);
       draw(latest);
