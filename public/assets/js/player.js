@@ -1,6 +1,7 @@
-// Oyuncu akışı: açılış -> sözleşme -> kayıt -> kimlik çarkı + görev -> 3-2-1 -> sayaç -> süre doldu.
+// Oyuncu akışı: açılış -> sözleşme -> kayıt (tek kutu) -> kimlik çarkı + görev -> 3-2-1 -> sayaç -> süre doldu -> karakter adı.
 // Saat bilgisi sunucudan gelir (startsAt / endsAt); telefonun saati şaşsa da sayaç şaşmaz.
-// Sayfa yenilenirse localStorage'daki kimlikle aynı noktadan devam edilir. Kaptan sert, ama adil.
+// Sayfa yenilenirse localStorage'daki kimlikle aynı noktadan devam edilir; süre dolmuşsa karakter adı ekranı yeniden açılır.
+// Sayfayı hiç açmayan oyuncunun adını yönetici panelden yazar. Kaptan sert, ama adil.
 (() => {
   'use strict';
   const { $, api, audio, sprite, mmss } = CT;
@@ -37,13 +38,11 @@
     e.preventDefault();
     const err = $('#f-err'), btn = $('#btn-go');
     err.textContent = '';
-    const body = { first: $('#f-first').value.trim(), last: $('#f-last').value.trim(), phone: $('#f-phone').value.trim() };
-    if (body.first.length < 2) { err.textContent = 'Adını yaz (en az 2 harf).'; return; }
-    if (body.last.length < 2) { err.textContent = 'Soyadını yaz (en az 2 harf).'; return; }
-    if (body.phone.replace(/\D/g, '').length < 10) { err.textContent = 'Telefon numarası eksik görünüyor.'; return; }
+    const name = $('#f-name').value.trim();
+    if (name.length < 2) { err.textContent = 'Adını yaz (en az 2 harf).'; return; }
     btn.disabled = true; btn.firstChild.textContent = 'KAYDEDİLİYOR...';
     try {
-      const d = await api('/api/register', { method: 'POST', body });
+      const d = await api('/api/register', { method: 'POST', body: { name } });
       enter(d.player);
     } catch (ex) {
       err.textContent = ex.message;
@@ -110,7 +109,7 @@
 
   function runFight(fresh) {
     show('fight');
-    $('#k-id').textContent = P.id; $('#k-id2').textContent = P.id; $('#k-name').textContent = P.first;
+    $('#k-id').textContent = P.id; $('#k-id2').textContent = P.id; $('#k-name').textContent = P.name;
     $('#k-main').textContent = P.prompt; $('#k-twist').textContent = P.twist;
     keepAwake();
     CT.muteButton();
@@ -158,14 +157,66 @@
   function finish(rem) {
     $('#hp-fill').style.width = '0%';
     $('#clock').innerHTML = '00:00<span class="cs">.00</span>';
-    $('#tu-skull').innerHTML = sprite('skull', 10);
+    $('#tu-skull').innerHTML = sprite("skull", 7);
     $('#tu-id').textContent = P.id;
     $('#timesup').hidden = false;
+    showNameState();
     if (rem > -4000) {                 // sayfa yeni açılmadıysa korna çalsın
       audio.horn();
       if (navigator.vibrate) navigator.vibrate([400, 150, 400, 150, 800]);
     }
   }
+
+  /* ---------------- 4) karakter adı ---------------- */
+  const nameForm = $('#nameform'), nameDone = $('#namedone');
+
+  // Üç hâl: ad yok (form açık), ad var (özet + DEĞİŞTİR), yönetici adı sildi ve kilitledi (oyuncu bekler).
+  function showNameState(editing = false) {
+    const has = !!P.charName;
+    if (P.locked && !has) {
+      nameForm.hidden = true; nameDone.hidden = false;
+      $('#nd-name').textContent = '...';
+      $('#nd-sub').textContent = 'Karakterinin adını Art Director verecek.';
+      $('#btn-rename').hidden = true;
+      return;
+    }
+    nameForm.hidden = has && !editing;
+    nameDone.hidden = !has || editing;
+    if (has) {
+      $('#nd-name').textContent = P.charName;
+      $('#nd-sub').textContent = P.locked ? 'Ad Art Director tarafından belirlendi.' : 'Kaydedildi. Arenada bu adla dövüşecek!';
+      $('#btn-rename').hidden = P.locked;
+    }
+    $('#f-char').value = P.charName || '';
+    $('#n-err').textContent = '';
+  }
+
+  // Yönetici o arada adı değiştirdiyse sunucudaki hâli çek.
+  async function refreshMe() {
+    try {
+      const d = await api('/api/me?id=' + encodeURIComponent(P.id));
+      P.charName = d.player.charName; P.locked = d.player.locked;
+    } catch { /* ağ yoksa eldeki hâl kalır */ }
+    showNameState();
+  }
+
+  nameForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const err = $('#n-err'), btn = $('#btn-name');
+    err.textContent = '';
+    const name = $('#f-char').value.trim();
+    if (name.length < 2) { err.textContent = 'En az 2 harf yaz.'; return; }
+    btn.disabled = true;
+    try {
+      const d = await api('/api/name', { method: 'POST', body: { id: P.id, name } });
+      P.charName = d.charName; audio.coin(); showNameState();
+    } catch (ex) {
+      if (ex.status === 403 || ex.status === 409) { err.textContent = ex.message; await refreshMe(); err.textContent = ex.message; }
+      else err.textContent = ex.message;
+    }
+    btn.disabled = false;
+  });
+  $('#btn-rename').addEventListener('click', () => showNameState(true));
 
   $('#tu-new').addEventListener('click', e => {
     e.preventDefault();

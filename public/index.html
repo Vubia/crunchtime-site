@@ -42,7 +42,7 @@
           <li><b>AĞLAMAYACAĞIM.</b> Ağlarsam gözyaşım mürekkep sayılır ve çizime dahil edilir.</li>
           <li>"Crunch Time Gazisi" rozeti iade edilemez, takas edilemez ve kimseye gösterilmeden taşınamaz.</li>
         </ol>
-        <p class="fine">Veri notu: Ad, soyad ve telefon numaran yalnızca etkinlik sonrası anketi göndermek ve çizimini sana eşleştirmek için kullanılır.</p>
+        <p class="fine">Veri notu: Yalnızca adın alınır; çizimini sana eşleştirmek için kullanılır. Telefon, e-posta ya da başka kişisel bilgi istenmez. Etkinlik geri bildirimi anonim bir ankete bırakılır.</p>
       </div>
       <label class="check">
         <input type="checkbox" id="chk-agree"><i></i>
@@ -56,9 +56,7 @@
   <section id="s-form" class="screen" hidden>
     <form class="panel" id="form" novalidate autocomplete="on">
       <h2>OYUNCU SEÇİMİ</h2>
-      <label class="field"><span>ADIN</span><input id="f-first" name="given-name" autocomplete="given-name" maxlength="40" autocapitalize="words"></label>
-      <label class="field"><span>SOYADIN</span><input id="f-last" name="family-name" autocomplete="family-name" maxlength="40" autocapitalize="words"></label>
-      <label class="field"><span>TELEFON</span><input id="f-phone" name="tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="05__ ___ __ __"></label>
+      <label class="field"><span>ADIN</span><input id="f-name" name="name" autocomplete="given-name" maxlength="40" autocapitalize="words"></label>
       <div class="err" id="f-err" role="alert"></div>
       <button class="btn" id="btn-go" type="submit">KAYDET VE BAŞLA<span class="arr"></span></button>
     </form>
@@ -93,11 +91,28 @@
 
 <!-- SÜRE DOLDU -->
 <div id="timesup" hidden>
-  <div id="tu-skull"></div>
-  <div class="tu1">TIME'S<br>UP!</div>
-  <div class="tu2">PENCILS<br>DOWN!</div>
-  <div class="tu3">Kalemi bırak. Çizimini <b id="tu-id">----</b> ID'siyle Art Director'e teslim et.</div>
-  <a class="mini-link" id="tu-new" href="#" style="color:#fff">başka oyuncu için yeni kayıt</a>
+  <div class="tu-in">
+    <div id="tu-skull"></div>
+    <div class="tu1">TIME'S<br>UP!</div>
+    <div class="tu2">PENCILS<br>DOWN!</div>
+    <div class="tu3">Kalemi bırak. Çizimini <b id="tu-id">----</b> ID'siyle Art Director'e teslim et.</div>
+
+    <!-- Karakterine takma ad: sayfa kapanırsa yönetici panelden doldurur, küfürlü bir şey yazılırsa yönetici siler -->
+    <form class="tu-name" id="nameform" novalidate>
+      <label for="f-char">KARAKTERİNE BİR İSİM VER</label>
+      <input id="f-char" name="char" maxlength="24" autocomplete="off" placeholder="örn. Spatula Şef">
+      <div class="err" id="n-err" role="alert"></div>
+      <button class="btn" type="submit" id="btn-name">İSMİ KAYDET<span class="arr"></span></button>
+    </form>
+    <div class="tu-name tu-done" id="namedone" hidden>
+      <div class="nd-l">KARAKTERİN ADI</div>
+      <div class="nd-n" id="nd-name"></div>
+      <div class="nd-s" id="nd-sub">Kaydedildi. Arenada bu adla dövüşecek!</div>
+      <button class="btn small ghost" type="button" id="btn-rename">DEĞİŞTİR</button>
+    </div>
+
+    <a class="mini-link" id="tu-new" href="#" style="color:#fff">başka oyuncu için yeni kayıt</a>
+  </div>
 </div>
 <div class="fflash" id="fflash" hidden><b>FIGHT!</b></div>
 

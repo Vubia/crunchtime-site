@@ -2,6 +2,9 @@
 
 export const INTRO_MS = 8000;   // "3-2-1 FIGHT" giriş sahnesi; istemci bu sayıyı sunucudan okur
 export const DEFAULT_MIN = 15;  // sayaç süresi (dakika), panelden değişir
+export const DEFAULT_ROUNDS = 3;      // maç başına normal soru sayısı, panelden değişir
+export const DEFAULT_VOTE_SECS = 30;  // soru başına oy süresi (sn), 0 = yönetici elle kapatır
+export const NO_NAME = 'İsimsiz';     // karakter adı verilmemiş dövüşçünün ekranda görünen adı
 
 export const json = (obj, status = 200, extra = {}) =>
   new Response(JSON.stringify(obj), {
@@ -98,19 +101,38 @@ export async function setSetting(env, k, v) {
     .bind(k, String(v)).run();
 }
 
-// Oyuncunun ekranına giden paket. Telefon numarası asla buradan çıkmaz.
+// Oyuncunun ekranına giden paket. Kişisel veri olarak yalnızca kayıttaki ad ve karakter adı vardır.
 export function playerView(row) {
   const startsAt = row.created_at + INTRO_MS;
   const durationMs = row.duration_min * 60000;
   return {
     id: row.id,
-    first: row.first_name,
+    name: row.name,
     prompt: row.prompt,
     twist: row.twist || '',
+    charName: row.char_name || '',
+    locked: !!row.name_locked,
     introMs: INTRO_MS,
     startsAt,
     endsAt: startsAt + durationMs,
     durationMs,
     serverNow: Date.now(),
   };
+}
+
+// Dövüşçünün arenada görünen kısa görevi: [ruh hali + karakter, silah, ek şart].
+// Kısa alanlar boşsa (eski kayıt) uzun görev metni kırpılıp tek satır olarak verilir.
+export function taskParts(row) {
+  const [who = '', weapon = ''] = String(row.task_short || '').split('|');
+  if (who) return [who, weapon, row.twist_short || ''];
+  const p = String(row.prompt || '');
+  return [p.length > 46 ? p.slice(0, 45).trimEnd() + '…' : p, '', ''];
+}
+
+// Anket bağlantısı: yalnızca https; `javascript:` gibi şeyler içeri sızmasın. Geçersizse null, boşsa ''.
+export function cleanUrl(s) {
+  const t = String(s ?? '').trim();
+  if (!t) return '';
+  if (t.length > 300) return null;
+  try { const u = new URL(t); return u.protocol === 'https:' ? u.href : null; } catch { return null; }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Arena: projeksiyon ekranı. Gemi, top ve seyirci tamam; ortada iki çizim, bir kazanan. Ağlamak yasak. -->
+<!-- Arena: projeksiyon ekranı. Gemi, top ve seyirci tamam; ortada iki çizim, iki can çubuğu. Ağlamak yasak. -->
 <html lang="tr">
 <head>
 <meta charset="utf-8">
@@ -23,9 +23,20 @@
     <div class="nm"><b id="champ-id"></b><span id="champ-name"></span></div>
   </div>
 
+  <!-- Etkinlik anketi: yönetici panelden açınca her şeyin üstüne biner -->
+  <div id="survey" hidden>
+    <div class="sq" id="survey-qr"></div>
+    <div class="sb">
+      <div class="s1">BİZE BİR İYİLİK YAP!</div>
+      <div class="s2">QR'ı okut, etkinlik anketini doldur. Anonim, bir dakika sürer.</div>
+      <div class="s3" id="survey-url"></div>
+    </div>
+  </div>
+
   <div class="net" id="net" hidden>BAĞLANTI YOK</div>
   <div class="snd" id="snd">ses ve tam ekran için ekrana tıkla</div>
 
+<script src="/assets/js/qrcode.js"></script>
 <script src="/assets/js/common.js"></script>
 <script src="/assets/js/arena.js"></script>
 </body>

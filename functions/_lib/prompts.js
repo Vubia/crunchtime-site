@@ -1,7 +1,8 @@
 // Görev ambarı: üç sandıktan birer parça çekilir, dördüncüden zorunlu ek şart.
-// Kalıp: "Silah olarak {silah} kullanan {ruh hali} {karakter}"
-// Yeni malzeme eklemek için ilgili listeye bir satır eklemek yeter. Kural: silah "kullanan"dan önce,
-// ruh hali de karakterden önce durabilmeli, yoksa cümle yalpalar.
+// Kalıp: "Silah olarak {silah} kullanan {ruh hali} {karakter} yarat!"
+// Her parçanın iki yüzü var: tam hâli (oyuncunun telefonuna) ve kısa hâli (arenada dövüşçünün altına).
+// Yeni malzeme eklemek için ilgili listeye bir satır yeter: [tam, kısa]. Silah "kullanan"dan önce,
+// ruh hali karakterden önce durabilmeli, yoksa cümle yalpalar. Sülfür tost makinesini hâlâ bırakmadı.
 
 const MOODS = [
   'öfkeli', 'sürekli ağlayan', 'aşırı kibirli', 'uykusuz', 'korkunç derecede neşeli',
@@ -21,29 +22,47 @@ const CHARACTERS = [
 ];
 
 const WEAPONS = [
-  'devasa bir spatula', 'kaynar bir çaydanlık', 'tost makinesi', 'uzatma kablosu',
-  'ucu kırık bir şemsiye', 'dev bir diş fırçası', 'pilli matkap', 'baget ekmek',
-  'ıslak bir paspas', 'vuvuzela', 'kızgın bir ütü', 'bowling topu', 'akordeon',
-  'katlanır kamp sandalyesi', 'balık ağı', 'yıpranmış bir cetvel', 'çalar saat',
-  'tencere kapağı', 'dev bir çatal', 'lastik ördek ordusu', 'rulo duvar kâğıdı',
-  'ağır bir daktilo', 'buz pateni', 'sürpriz kutusu',
+  ['devasa bir spatula', 'spatula'],
+  ['kaynar bir çaydanlık', 'çaydanlık'],
+  ['tost makinesi', 'tost makinesi'],
+  ['uzatma kablosu', 'uzatma kablosu'],
+  ['ucu kırık bir şemsiye', 'şemsiye'],
+  ['dev bir diş fırçası', 'diş fırçası'],
+  ['pilli matkap', 'matkap'],
+  ['baget ekmek', 'baget'],
+  ['ıslak bir paspas', 'paspas'],
+  ['vuvuzela', 'vuvuzela'],
+  ['kızgın bir ütü', 'ütü'],
+  ['bowling topu', 'bowling topu'],
+  ['akordeon', 'akordeon'],
+  ['katlanır kamp sandalyesi', 'kamp sandalyesi'],
+  ['balık ağı', 'balık ağı'],
+  ['yıpranmış bir cetvel', 'cetvel'],
+  ['çalar saat', 'çalar saat'],
+  ['tencere kapağı', 'tencere kapağı'],
+  ['dev bir çatal', 'çatal'],
+  ['lastik ördek ordusu', 'lastik ördekler'],
+  ['rulo duvar kâğıdı', 'duvar kâğıdı'],
+  ['ağır bir daktilo', 'daktilo'],
+  ['buz pateni', 'buz pateni'],
+  ['sürpriz kutusu', 'sürpriz kutusu'],
 ];
 
 const TWISTS = [
-  'Karakterin üzerinde mutlaka bir kravat ya da papyon olsun.',
-  'Yalnızca 3 renk kullanabilirsin.',
-  'Yanında işe yaramaz minik bir yardımcısı olsun.',
-  'Karakter tek ayak üstünde dövüş pozunda olsun.',
-  'Bir gözü diğerinden büyük olsun.',
-  'Hitbox belli olsun: başı minik, yumruğu dev.',
-  'Kostümünde mutlaka puantiyeli bir parça olsun.',
-  'Sırtında bir şeyler taşısın: market poşeti, sandık, bir çift terlik...',
-  'Karakterin en sevdiği yemek çizimin bir yerinde saklı olsun.',
-  'Ağzı sonuna kadar açık, kahkaha atarken çiz.',
-  'Karaktere bir isim bul ve çizimin altına yaz.',
-  'Süper hamlesinin adını çizimin altına yaz.',
-  'Siluetine bakınca kim olduğu anlaşılmalı.',
-  'Karakterin muhteşem bir bıyığı olsun, olmasa bile.',
+  ['Karakterin üzerinde mutlaka bir kravat ya da papyon olsun.', 'kravat / papyon'],
+  ['Yalnızca 3 renk kullanabilirsin.', '3 renk'],
+  ['Yanında işe yaramaz minik bir yardımcısı olsun.', 'minik yardımcı'],
+  ['Karakter tek ayak üstünde dövüş pozunda olsun.', 'tek ayak'],
+  ['Bir gözü diğerinden büyük olsun.', 'asimetrik göz'],
+  ['Hitbox belli olsun: başı minik, yumruğu dev.', 'minik kafa, dev yumruk'],
+  ['Kostümünde mutlaka puantiyeli bir parça olsun.', 'puantiye'],
+  ['Sırtında bir şeyler taşısın: market poşeti, sandık, bir çift terlik...', 'sırtında yük'],
+  ['Karakterin en sevdiği yemek çizimin bir yerinde saklı olsun.', 'gizli yemek'],
+  ['Ağzı sonuna kadar açık, kahkaha atarken çiz.', 'kahkaha'],
+  ['Karakterin bir sloganı olsun, çizimin altına yaz.', 'slogan'],
+  ['Süper hamlesinin adını çizimin altına yaz.', 'süper hamle'],
+  ['Siluetine bakınca kim olduğu anlaşılmalı.', 'net siluet'],
+  ['Karakterin muhteşem bir bıyığı olsun, olmasa bile.', 'dev bıyık'],
 ];
 
 // crypto ile adil zar: Math.random bu iş için fazla gevşek.
@@ -53,7 +72,17 @@ function pick(list) {
   return list[buf[0] % list.length];
 }
 
+// prompt/twist: oyuncunun telefonunda görünen tam metin.
+// taskShort: "ruh hali karakter|silah" (arenada iki satıra bölünür); twistShort: kısa ek şart.
 export function makeMission() {
-  const prompt = `Silah olarak ${pick(WEAPONS)} kullanan ${pick(MOODS)} ${pick(CHARACTERS)} yarat!`;
-  return { prompt, twist: pick(TWISTS) };
+  const [weapon, weaponShort] = pick(WEAPONS);
+  const [twist, twistShort] = pick(TWISTS);
+  const mood = pick(MOODS);
+  const character = pick(CHARACTERS);
+  return {
+    prompt: `Silah olarak ${weapon} kullanan ${mood} ${character} yarat!`,
+    twist,
+    taskShort: `${mood} ${character}|${weaponShort}`,
+    twistShort,
+  };
 }

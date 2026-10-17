@@ -1,14 +1,16 @@
 -- Crunch Time: ambar defteri. Her tablo bir sandık, her satır bir define.
 
 -- Oyuncular: kayıt formundan gelen herkes buraya yazılır.
+-- Telefon, e-posta, soyad: hiçbiri tutulmaz. Geri bildirim anonim ankete bırakılır.
 CREATE TABLE IF NOT EXISTS players (
   id           TEXT PRIMARY KEY,            -- 4 haneli kimlik, örn. R7X2
-  first_name   TEXT NOT NULL,
-  last_name    TEXT NOT NULL,
-  phone        TEXT NOT NULL,               -- anket göndermek için (+90...)
-  phone_key    TEXT NOT NULL UNIQUE,        -- son 10 hane: aynı numara iki kez kaydolamaz
+  name         TEXT NOT NULL,               -- kayıtta tek kutuya yazılan ad
   prompt       TEXT NOT NULL,               -- verilen çizim görevi
   twist        TEXT,                        -- zorunlu ek şart
+  task_short   TEXT,                        -- arenada görünen kısa görev: "öfkeli İtalyan şef|spatula"
+  twist_short  TEXT,                        -- kısa ek şart: "3 renk"
+  char_name    TEXT,                        -- çizim bitince karaktere verilen ad
+  name_locked  INTEGER NOT NULL DEFAULT 0,  -- 1: yönetici dokundu, oyuncu artık değiştiremez
   duration_min INTEGER NOT NULL DEFAULT 15, -- kayıt anındaki süre
   created_at   INTEGER NOT NULL             -- ms (unix)
 );
@@ -27,7 +29,8 @@ CREATE TABLE IF NOT EXISTS kv (
   v TEXT NOT NULL
 );
 
--- Seyirci oyları: bir cihaz, bir maçta tek oy (değiştirebilir).
+-- Seyirci oyları: bir cihaz, bir soruda tek oy (kapanana kadar değiştirebilir).
+-- match_id sütunu aslında soru anahtarıdır: "<maç kimliği>#<soru sırası>", örn. g1r0m0#2.
 CREATE TABLE IF NOT EXISTS votes (
   match_id   TEXT NOT NULL,
   voter      TEXT NOT NULL,

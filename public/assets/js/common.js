@@ -109,4 +109,26 @@
     b.addEventListener('click', () => { b.classList.toggle('off', !CT.audio.toggle()); });
     document.body.appendChild(b);
   };
+
+  /* ------------------------------------------------------------------
+     QR: adres neyse QR o. Statik görsel yok; sayfa hangi adreste açıldıysa kod ona göre çizilir
+     (alan adı değişse de, test adresinde de doğru yere götürür). Sayfada qrcode.js yüklü olmalı.
+     Dönen şey tek parça SVG yazısıdır; kenar boşluğu (sessiz bölge) dahildir.
+     ------------------------------------------------------------------ */
+  CT.qr = (text, margin = 2) => {
+    const q = qrcode(0, 'M');
+    q.addData(String(text));
+    q.make();
+    const n = q.getModuleCount(), size = n + margin * 2;
+    let d = '';
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (!q.isDark(r, c)) continue;
+        let e = c; while (e < n && q.isDark(r, e)) e++;
+        d += `M${c + margin} ${r + margin}h${e - c}v1h-${e - c}z`;
+        c = e - 1;
+      }
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges" role="img" aria-label="QR kod"><rect width="${size}" height="${size}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+  };
 })();

@@ -38,9 +38,11 @@
     <section id="t-players">
       <div class="stats" id="stats"></div>
       <div class="toolbar">
-        <input class="inp" id="q" placeholder="ID, isim ya da telefon ara" autocomplete="off" autocapitalize="characters">
+        <input class="inp" id="q" placeholder="ID, ad ya da karakter adı ara" autocomplete="off" autocapitalize="characters">
         <button class="btn small" id="btn-refresh" type="button">YENİLE</button>
+        <button class="btn small ghost" id="btn-noname" type="button">SADECE İSİMSİZLER</button>
       </div>
+      <p class="hint">Karakter adı küfürlü ya da yanlışsa kutuyu düzeltip KAYDET'e bas: ad kilitlenir, oyuncu telefondan geri değiştiremez. Sayfayı kapatıp adını veremeyenlerin adını da buradan yaz.</p>
       <div id="plist"></div>
     </section>
 
@@ -50,6 +52,7 @@
         <h2>ÇİZİM FOTOĞRAFI YÜKLE</h2>
         <label class="field"><span>OYUNCU ID (4 HANE)</span><input id="qp-id" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
         <div class="who-line" id="qp-who">ID'yi yaz, kimin olduğu burada çıkar.</div>
+        <label class="field" id="qp-name-box" hidden><span>KARAKTER ADI (boşsa buradan yaz)</span><input id="qp-name" maxlength="24" autocomplete="off"></label>
         <input type="file" id="qp-file" accept="image/*" hidden>
         <button class="btn cyan" id="qp-pick" type="button" disabled>FOTOĞRAF ÇEK / SEÇ</button>
         <img class="preview" id="qp-prev" alt="" hidden>
@@ -74,23 +77,31 @@
         </div>
         <div id="b-ctl"></div>
       </div>
+      <div class="panel">
+        <h2>ETKİNLİK ANKETİ</h2>
+        <p class="hint" id="b-survey-hint"></p>
+        <button class="btn small" id="b-survey"></button>
+      </div>
       <div class="mlist" id="b-list"></div>
     </section>
 
     <!-- AYARLAR -->
     <section id="t-settings" hidden>
       <div class="panel">
-        <h2>SAYAÇ SÜRESİ</h2>
+        <h2>AYARLAR</h2>
+        <label class="field"><span>ÇİZİM SÜRESİ (DAKİKA)</span><input class="inp" id="s-min" type="number" min="1" max="180" style="width:140px"></label>
         <p class="hint">Yeni kayıt olanlar için geçerli. Zaten başlamış sayaçlar etkilenmez.</p>
-        <div class="row">
-          <input class="inp" id="s-min" type="number" min="1" max="180" style="width:130px">
-          <span>dakika</span>
-          <button class="btn small" id="s-save">KAYDET</button>
-        </div>
+        <label class="field"><span>MAÇ BAŞINA SORU SAYISI</span><input class="inp" id="s-rounds" type="number" min="1" max="9" style="width:140px"></label>
+        <p class="hint">Normal turlar bitince canı çok olan kazanır. Can eşitse TIE-BREAK soruları sorulur (en fazla 3, hâlâ eşitse yazı-tura).</p>
+        <label class="field"><span>OY SÜRESİ (SANİYE, 0 = ELLE KAPAT)</span><input class="inp" id="s-secs" type="number" min="0" max="300" style="width:140px"></label>
+        <p class="hint">Süre bitince oy kapanır ve panel soruyu kendiliğinden bitirir (panel açıkken). 0 yazarsan sen kapatırsın.</p>
+        <label class="field"><span>ANKET BAĞLANTISI (GOOGLE FORMS)</span><input class="inp" id="s-survey" type="url" placeholder="https://forms.gle/..." autocomplete="off" spellcheck="false"></label>
+        <p class="hint">Formu "yanıtları anonim" ayarıyla kur, bağlantısını buraya yapıştır. QR'ı Turnuva sekmesinden açarsın.</p>
+        <button class="btn small" id="s-save">KAYDET</button>
       </div>
       <div class="panel">
         <h2>VERİYİ İNDİR</h2>
-        <p class="hint">Ad, soyad, telefon, görev. Excel / Google Sheets'te açılır; telefonlar anket için hazır.</p>
+        <p class="hint">ID, ad, karakter adı ve görevler. Telefon numarası hiç toplanmaz.</p>
         <button class="btn small cyan" id="s-csv">CSV İNDİR</button>
       </div>
       <div class="panel danger">
