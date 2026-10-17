@@ -96,6 +96,13 @@ export async function getSetting(env, k, dflt) {
   const r = await env.DB.prepare('SELECT v FROM kv WHERE k = ?').bind(k).first();
   return r ? r.v : dflt;
 }
+// Anket bağlantısı hazır gelir: yönetici hiçbir şey yazmadıysa bu adres geçerlidir.
+// Ayarlar'dan değiştirilebilir. Alan boşaltılıp kaydedilirse kv'de boş bir satır kalır ve anket
+// kapalı sayılır (varsayılana dönülmez); yani anketsiz açmak da serbest. Hinche formu üç kere denedi, ikisinde 1 verdi.
+export const DEFAULT_SURVEY_URL = 'https://forms.gle/tNYprMWE1WAEynzq6';
+export function getSurveyUrl(env) {
+  return getSetting(env, 'survey_url', DEFAULT_SURVEY_URL);
+}
 export async function setSetting(env, k, v) {
   await env.DB.prepare('INSERT INTO kv (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v')
     .bind(k, String(v)).run();

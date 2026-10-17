@@ -3,7 +3,7 @@
 //   POST name | photo | settings | survey | bracket | reset
 //   DELETE players?id= | photo?id=
 import {
-  json, fail, clean, sameOrigin, adminGate, getSetting, setSetting, cleanUrl, taskParts,
+  json, fail, clean, sameOrigin, adminGate, getSetting, setSetting, getSurveyUrl, cleanUrl, taskParts,
   DEFAULT_MIN, DEFAULT_ROUNDS, DEFAULT_VOTE_SECS, NO_NAME,
 } from '../../_lib/util.js';
 import {
@@ -99,7 +99,7 @@ export async function onRequest({ request, env, params }) {
         durationMin: await intSetting(env, 'duration_min', DEFAULT_MIN),
         roundsPerMatch: await intSetting(env, 'rounds_per_match', DEFAULT_ROUNDS),
         voteSecs: await intSetting(env, 'vote_secs', DEFAULT_VOTE_SECS),
-        surveyUrl: await getSetting(env, 'survey_url', ''),
+        surveyUrl: await getSurveyUrl(env),
         surveyOn: (await getSetting(env, 'survey_on', '0')) === '1',
         ...c,
       });
@@ -136,7 +136,7 @@ export async function onRequest({ request, env, params }) {
     if (route === 'survey' && method === 'POST') {
       const b = await request.json();
       const on = !!b.on;
-      if (on && !(await getSetting(env, 'survey_url', ''))) return fail(400, 'Önce Ayarlar bölümüne anket bağlantısını yaz.');
+      if (on && !(await getSurveyUrl(env))) return fail(400, 'Önce Ayarlar bölümüne anket bağlantısını yaz.');
       await setSetting(env, 'survey_on', on ? '1' : '0');
       return json({ ok: true, on });
     }
@@ -198,7 +198,7 @@ async function adminBracketState(env) {
     live = { a: 0, b: 0 };
     for (const r of results) live[r.side] = r.n;
   }
-  const surveyUrl = await getSetting(env, 'survey_url', '');
+  const surveyUrl = await getSurveyUrl(env);
   const surveyOn = (await getSetting(env, 'survey_on', '0')) === '1';
   return {
     ok: true, serverNow: Date.now(), bracket: br, live,

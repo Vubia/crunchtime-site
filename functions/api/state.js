@@ -2,7 +2,7 @@
 // Telefon, görev metni, oyuncunun kendi adı yok; dövüşçü için kimlik + karakter adı + kısa görev çıkar.
 // Salondaki yüzlerce telefon aynı cevabı ister: cevap edge önbelleğinde 1 sn tutulur, D1'e saniyede ~1 sorgu gider.
 // Anket QR'ı da buradan akar: yönetici açınca arena ve oylama ekranları bir sonraki sorguda görür.
-import { json } from '../_lib/util.js';
+import { json, DEFAULT_SURVEY_URL } from '../_lib/util.js';
 import { publicBracket } from '../_lib/bracket.js';
 
 const CACHE_SEC = 1;
@@ -28,10 +28,11 @@ export async function onRequestGet({ request, env, waitUntil }) {
     const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM votes WHERE match_id = ?').bind(br.voting).first();
     voteTotal = r ? r.n : 0;
   }
-  const surveyOn = kv.survey_on === '1' && !!kv.survey_url;
+  const surveyUrl = kv.survey_url === undefined ? DEFAULT_SURVEY_URL : kv.survey_url;
+  const surveyOn = kv.survey_on === '1' && !!surveyUrl;
   const body = {
     ok: true, serverNow: Date.now(), voteTotal, bracket: publicBracket(br),
-    survey: { on: surveyOn, url: surveyOn ? kv.survey_url : '' },
+    survey: { on: surveyOn, url: surveyOn ? surveyUrl : '' },
   };
   // Tarayıcıya no-store gider; önbelleğe konan kopya yalnızca 1 sn yaşar.
   if (cache) waitUntil(cache.put(key, json(body, 200, { 'cache-control': `public, max-age=${CACHE_SEC}` })));
