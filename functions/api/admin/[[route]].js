@@ -10,7 +10,7 @@ import {
   readBracket, saveBracket, writeNewBracket, buildBracket, findMatch, setWinner, clearWinner, nextPlayable,
   resolveRound, rnd, MAX_TIEBREAK,
 } from '../../_lib/bracket.js';
-import { pickQuestion } from '../../_lib/questions.js';
+import { pickQuestion, QUESTIONS } from '../../_lib/questions.js';
 
 const MAX_PHOTO_B64 = 900000;   // ~650 KB ikili; istemci zaten ~120 KB'a küçültüyor
 
@@ -172,7 +172,7 @@ export async function onRequest({ request, env, params }) {
       if (b.what === 'players') {
         await env.DB.batch([
           env.DB.prepare('DELETE FROM photos'), env.DB.prepare('DELETE FROM players'),
-          env.DB.prepare('DELETE FROM votes'), env.DB.prepare("DELETE FROM kv WHERE k = 'bracket'"),
+          env.DB.prepare('DELETE FROM votes'), env.DB.prepare("DELETE FROM kv WHERE k IN ('bracket', 'q_used')"),
         ]);
       } else if (b.what === 'bracket') {
         await env.DB.batch([env.DB.prepare('DELETE FROM votes'), env.DB.prepare("DELETE FROM kv WHERE k = 'bracket'")]);
@@ -265,7 +265,13 @@ async function bracketAction(env, body) {
     const n = m.log.length + 1;
     let text = clean(body.text, 90);
     if (text && text.length < 5) return fail(400, 'Soru çok kısa.');
-    if (!text) { const p = pickQuestion(br.used || []); text = p.text; br.used = p.used; }
+    // Sorulanlar ağaçtan ayrı tutulur (kv 'q_used'): ağaç yeniden kurulsa da havuz bitmeden tekrar gelmez.
+    let usedQ = [];
+    try { usedQ = JSON.parse(await getSetting(env, 'q_used', '[]')); } catch { usedQ = []; }
+    if (!Array.isArray(usedQ)) usedQ = [];
+    if (!text) { const p = pickQuestion(usedQ); text = p.text; usedQ = p.used; }
+    else if (QUESTIONS.includes(text) && !usedQ.includes(text)) usedQ.push(text);   // elle yazılan havuz sorusu da sayılır
+    await setSetting(env, 'q_used', JSON.stringify(usedQ));
     // Kural dışarıdan verilebilir (deneme için); panel göndermez, boşsa zar atılır.
     const mode = body.mode === 'most' || body.mode === 'least' ? body.mode : (rnd(2) === 0 ? 'most' : 'least');
     const key = `${m.id}#${n}`;

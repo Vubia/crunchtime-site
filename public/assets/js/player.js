@@ -13,16 +13,78 @@
   let offset = 0;        // sunucu saati - telefon saati
   const now = () => Date.now() + offset;
 
-  // Art Director'ün sahne arkası bağırışları: kalan saniyeye göre en son geçilen satır görünür.
+  // Art Director'ün sahne arkası bağırışları. İki sandık var:
+  //  SHOUTS      sabit satırlar: ilki açılış sözü, sonrakiler kalan saniyeye bağlı "son dakika" sözleri.
+  //  SHOUT_POOL  havuz: aradaki boşluğu 30-45 sn'de bir rastgele (tekrarsız) doldurur.
+  // Sabit satır (at <= 180) çıkınca bir sonrakine kadar ekranda kalır; daha öncekiler yalnızca 25 sn görünür.
   const SHOUTS = [
     { at: Infinity, t: 'Saat işliyor! Gözünü kağıttan ayırma.' },
-    { at: 600, t: 'Bu karakterin motivasyonu ne? Vergilerini mi ödeyememiş? Biraz duygu kat şuna!' },
-    { at: 420, t: 'Bu çizime bakıyorum ve hiçbir şey hissetmiyorum. Hissettir bana.' },
     { at: 300, t: '5 dakika! Karakter değil, yürüyen bir buzdolabı çizmişsin. Hitbox nerede?' },
     { at: 180, t: 'Son 3 dakika! Oyunu ertelersek yatırımcılar beni oyar, ben de sizi oyarım!' },
+    { at: 140, t: 'Son dakikalara yaklaşıyoruz! Ana hatları bitir, detaya sonra bakarız.' },
+    { at: 100, t: 'Kimse ana hatları bitirmedi. İlk sen ol, efsane olursun.' },
     { at: 60, t: 'SON 60 SANİYE! Ağlamak yok, çizmek var!' },
+    { at: 35, t: 'Kornaya basacağım... Hayır, henüz değil. Ama parmağım hazır.' },
     { at: 10, t: 'KALEMLERİ KALDIRMAYA HAZIRLAN...' },
   ];
+  const SHOUT_POOL = [
+    'Bu karakterin motivasyonu ne? Vergilerini mi ödeyememiş? Biraz duygu kat şuna!',
+    'Bu çizime bakıyorum ve hiçbir şey hissetmiyorum. Hissettir bana.',
+    'Not quite my tempo! Daha hızlı çiz, daha hızlı!',
+    'Boş kağıt sanat değildir. Boş kağıt, grevdir. Greve izin yok.',
+    'Bu çizgiyi beğendim. Tekrar baktım, beğenmedim. Üçüncü kez baktım: yine beğenmedim.',
+    'Bu kol neden dizine kadar uzuyor? Neyse, bırak, hitbox\'a iyi gelir.',
+    'FUS RO DAH! Çizgi böyle çekilir! Kağıt titresin!',
+    'Bu pozda dövüşen kendi ayağına basar. Ama sevdim, bırak öyle kalsın.',
+    'Bu yumruk Hadouken atmak istiyor. Engelleme, yazık.',
+    'Bu çizimi görseler "FINISH HIM!" diye bağırırlar. Kimi bitireceklerini söylemiyorum.',
+    'Bu ayak mı, ekmek mi? Karar ver, sonra çiz, sonra ben karar veririm.',
+    'Yanlış çizgi yoktur, yalnızca bitmemiş çizgi vardır. Bu arada, bu yanlış.',
+    'Bu çizim çiğ, pişir biraz! Gordon olsa bağırırdı, ben yalnızca iç çekiyorum.',
+    'Bu karakter zindanda ilk tuzağa basar. Ayakkabılarına bak.',
+    'YOU SHALL NOT PASS! Deadline\'ı kastettim. Çiz, çiz, çiz.',
+    'It\'s dangerous to go alone! Al şu silgiyi.',
+    'Bu çizim bir oyun olsaydı, yükleme ekranında takılı kalırdı.',
+    'Hadouken değil, çizgi çek! Çizgi!',
+    'Ben J.K. Simmons değilim. Ama şu an biraz oldum.',
+    'Yüzük kimsede yoksa çizim de kimsede yok. Çiz şunu!',
+    'It\'s a trap! Bu kadar detaya girme, süre bitiyor!',
+    'Sen kimsin? Çizer misin, yoksa kağıdı süsleyen biri mi? Cevabı çizginle ver.',
+    'Hey, listen! Süre bitiyor!',
+    'Kaydetmeyi unuttun mu? Hayır, bu kağıt. Kaydetmek yok, kalem oynat.',
+    'Pikachu bile bu kadar düşünmez. Çiz!',
+    'Bu çizimde bir ruh var. Ruhu zayıf ama var.',
+    'Konami kodunu denedin mi? Yukarı, yukarı, aşağı, aşağı... sen yine çiz.',
+    'Kağıdın kenarında boşluk kalmış. Boşluk, kaybedilen puandır.',
+    'Bu karakterin geçmişi var mı? Yok mu? Uydur, hızlıca.',
+    'Harika. Şimdi bunu iki kat daha büyük çiz. Neden mi? Patron öyle istiyor.',
+    'Şu an çizdiğin şey ya sanat ya da kaza. Sanat de, güven veriyor.',
+    'Mario bile bu kadar zıplamadı. Sen de ilerle.',
+    'Ben bu çizimi bir oyunun kapağında görürsem alırım. Almam. Ama düşünürüm.',
+    'Yoda olsaydı derdi: çiz, çiz, çiz. Denemek yok.',
+    'Pasta yalandır, deadline gerçektir.',
+    'Bu çizime bakınca Darth Vader gibi derin bir nefes aldım. Sebebi çizim değil.',
+  ];
+  const SHOUT_MIN = 30, SHOUT_MAX = 45;
+
+  // Söz seçici: totalSec çizim süresi. Dönen fonksiyon her saniye kalan süreyle çağrılır, o an görünecek sözü verir.
+  function makeShouter(totalSec) {
+    let bag = [], current = null, resumed = false, nextAt = totalSec - (SHOUT_MIN + Math.random() * (SHOUT_MAX - SHOUT_MIN));
+    const draw = () => {
+      if (!bag.length) bag = SHOUT_POOL.map((_, i) => i).sort(() => Math.random() - .5);
+      let i = bag.pop();
+      if (SHOUT_POOL[i] === current && bag.length) i = bag.pop();   // torba bitip baştan dolarsa üst üste aynısı gelmesin
+      return SHOUT_POOL[i];
+    };
+    return remSec => {
+      let m = null;
+      for (const s of SHOUTS) if (s.at < totalSec && remSec <= s.at) m = s;
+      if (m && (m.at <= 180 || m.at - remSec < 25)) { resumed = true; return m.t; }
+      // Sabit söz bitince eski söz geri gelmesin, yenisi çekilsin.
+      if (resumed || remSec <= nextAt) { resumed = false; current = draw(); nextAt = remSec - (SHOUT_MIN + Math.random() * (SHOUT_MAX - SHOUT_MIN)); }
+      return current || SHOUTS[0].t;
+    };
+  }
 
   /* ---------------- 1) açılış, sözleşme, form ---------------- */
   function drawHud() {
@@ -120,7 +182,8 @@
     }
 
     const clock = $('#clock'), fill = $('#hp-fill'), hp = $('#hp'), quote = $('#quote');
-    let lastSec = null, lastShout = -1, over = false;
+    let lastSec = null, lastShout = null, over = false;
+    const shouter = makeShouter(P.durationMs / 1000);
 
     const tick = () => {
       if (over) return;
@@ -145,9 +208,8 @@
         lastSec = sec;
         if (sec <= 10) audio.beep(sec <= 3 ? 1318 : 880);
         const remSec = rem / 1000;
-        let idx = 0;
-        SHOUTS.forEach((s, i) => { if (remSec <= s.at && s.at < P.durationMs / 1000) idx = i; });
-        if (idx !== lastShout) { lastShout = idx; quote.textContent = '"' + SHOUTS[idx].t + '"'; }
+        const line = shouter(remSec);
+        if (line !== lastShout) { lastShout = line; quote.textContent = '"' + line + '"'; }
       }
     };
     const iv = setInterval(tick, 50);

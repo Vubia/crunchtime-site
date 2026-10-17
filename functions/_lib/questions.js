@@ -22,7 +22,6 @@ export const QUESTIONS = [
   'Hangi karakter alarmı beş kere erteliyor?',
   'Hangi karakter trafikte kornaya basıp sonra özür diliyor?',
   'Hangi karakter yemek siparişini hep yanlış adrese veriyor?',
-  'Hangi karakter patatesi çatalla değil elle yiyor?',
   'Hangi karakter kar yağınca ilk dışarı fırlıyor?',
   'Hangi karakter filmlerin sonunu önceden söylüyor?',
   'Hangi karakter tatilde bile e-postalarına bakıyor?',
@@ -59,14 +58,76 @@ export const QUESTIONS = [
   'Hangi karakter pastadaki mumu üflemeden önce üç dilek tutuyor?',
   'Hangi karakter "bir bardak şeker" isteyip bir saat sohbet ediyor?',
   'Hangi karakter tabaktaki son lokmayı kimseye kaptırmıyor?',
+  'Hangi karakter zar atmadan önce zarı üfleyip dua ediyor?',
+  'Hangi karakter her sandığın mimik olduğundan şüpheleniyor?',
+  'Hangi karakter tavernada hesabı ödemeden pencereden kaçıyor?',
+  'Hangi karakter ejderhayla pazarlık etmeyi deniyor?',
+  'Hangi karakter zindanda her tuzağa birinci basıyor?',
+  'Hangi karakter kritik başarısızlıktan sonra "bir daha atsam?" diyor?',
+  'Hangi karakter büyü kitabını otobüste unutuyor?',
+  'Hangi karakter oyun yöneticisine börek ısmarlayıp zar kayırması umuyor?',
+  'Hangi karakter seviye atlar atlamaz kıyafet mağazasına koşuyor?',
+  'Hangi karakter orkla kavga ederken bile "pardon" diyor?',
+  'Hangi karakter büyücü kulesinde asansör arıyor?',
+  'Hangi karakter ganimeti bölüşürken hesap makinesi çıkarıyor?',
+  'Hangi karakter büyülü kılıcıyla ekmek kesiyor?',
+  'Hangi karakter ejderha uyurken tam o anda hapşırıyor?',
+  'Hangi karakter iksirin etiketini okumadan içiyor?',
+  'Hangi karakter martıya gevrek kaptırıp arkasından bağırıyor?',
+  'Hangi karakter vapura son saniyede koşarak yetişiyor?',
+  'Hangi karakter Kordon\'da bisiklet yolunda yürüyüp herkesi çıldırtıyor?',
+  'Hangi karakter Alsancak\'ta park yeri için bir saat dönüyor?',
+  'Hangi karakter boyozun yanında üç yumurta yiyor?',
+  'Hangi karakter Kemeraltı\'nda pazarlığı kaybedip yine de teşekkür ediyor?',
+  'Hangi karakter Saat Kulesi\'nin önünde sürekli selfie çekiyor?',
+  'Hangi karakter İZBAN\'da ayakta uyuyup durağını kaçırıyor?',
+  'Hangi karakter lokma için "tek porsiyon" deyip üçüncüyü sipariş ediyor?',
+  'Hangi karakter martıyla göz göze gelip pes ediyor?',
+  'Hangi karakter ejderhasını Kordon\'da gezdirmeye çalışıyor?',
+  'Hangi karakter büyü yapıp vapuru bekletmeye çalışıyor?',
+  'Hangi karakter Kemeraltı\'nda büyülü kılıcı pazarlıkla alıyor?',
+  'Hangi karakter İzmircon\'a kostümle gelip kapıdan sığamıyor?',
+  'Hangi karakter peruğuyla tuvalete girmeye çalışıyor?',
+  'Hangi karakter cosplay yarışmasında sahneden inmek bilmiyor?',
+  'Hangi karakter İzmircon\'da her zaman aynı kostümle geziyor?',
+  'Hangi karakter standlarda "sadece bakıyorum" deyip iki poşetle çıkıyor?',
+  'Hangi karakter figür standında "çok pahalı" deyip yine de alıyor?',
+  'Hangi karakter çizer masasında "bunu da çizer misiniz?" diye listeyi uzatıyor?',
+  'Hangi karakter oyun turnuvasında kaybedince fişi çekmek istiyor?',
+  'Hangi karakter workshop\'ta kalemini unutup komşusunun kalemini kapıyor?',
+  'Hangi karakter İzmircon\'da Art Director\'ü görünce çizimini saklıyor?',
+  'Hangi karakter İzmircon\'un son günü standın altında uyuyakalıyor?',
+  'Hangi karakter İzmircon çıkışında ayakkabılarını elinde taşıyor?',
+  'Hangi karakter ejderhasını İzmircon bilet kuyruğuna sokmaya çalışıyor?',
+  'Hangi karakter büyücü cübbesiyle sıcakta İzmircon kuyruğunda pişiyor?',
+  'Hangi karakter "Fus Ro Dah!" diye bağırıp önündeki masayı deviriyor?',
+  'Hangi karakter Hadouken yapmak için gerçekten sokakta kollarını açıyor?',
+  'Hangi karakter boss savaşından önce kaydetmeyi hep unutuyor?',
+  'Hangi karakter yüzüğü kaybedince bütün mahalleyi ayağa kaldırıyor?',
+  'Hangi karakter Mario gibi her boruya girmeye çalışıyor?',
+  'Hangi karakter her mantarı yiyip büyüyeceğini umuyor?',
+  'Hangi karakter Gandalf gibi "geçemezsin!" diyip kapıyı tutuyor?',
+  'Hangi karakter Yoda gibi cümleyi ters kurup öyle konuşuyor?',
+  'Hangi karakter "Pasta yalandır" deyip yine de pastayı yiyor?',
+  'Hangi karakter Rocky müziğiyle merdiven çıkıp yarı yolda pes ediyor?',
+  'Hangi karakter Pokémon topunu bozuk para gibi cebinde taşıyor?',
+  'Hangi karakter oyunda tuzak görünce "bu bir tuzak" deyip yine de giriyor?',
 ];
 
-// Kullanılmamış sorulardan birini çeker; hepsi bittiyse havuz baştan dolar.
-// used: şimdiye kadar sorulanların sıra numaraları (ağaçta saklanır, aynı soru turnuvada tekrar etmesin).
+// Kullanılmamış sorulardan birini çeker; havuzdaki HER soru bir kez sorulmadan hiçbiri tekrar gelmez.
+// used: şimdiye kadar sorulanların METİNLERİ (veritabanında ağaçtan bağımsız saklanır: ağaç yeniden kurulsa da,
+// soru listesi düzenlenip numaralar kaysa da tekrar çıkmaz). Havuz bitince tur baştan başlar; yalnızca yeni
+// turun ilk sorusu, önceki turun son sorusu olmasın.
 export function pickQuestion(used = []) {
-  let pool = QUESTIONS.map((_, i) => i).filter(i => !used.includes(i));
-  let nextUsed = used;
-  if (!pool.length) { pool = QUESTIONS.map((_, i) => i); nextUsed = []; }
-  const idx = pool[rnd(pool.length)];
-  return { idx, text: QUESTIONS[idx], used: [...nextUsed, idx] };
+  const seen = new Set(used);
+  let pool = QUESTIONS.filter(q => !seen.has(q));
+  let base = used;
+  if (!pool.length) {
+    const last = used[used.length - 1];
+    base = [];
+    pool = QUESTIONS.filter(q => q !== last);
+    if (!pool.length) pool = QUESTIONS.slice();   // tek soruluk havuz
+  }
+  const text = pool[rnd(pool.length)];
+  return { text, used: [...base, text] };
 }
